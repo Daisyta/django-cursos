@@ -41,21 +41,25 @@
             content: "Curso: " + Name + "<br>Description: " + Description,
             buttons: {
             
-                somethingElse: {
-                    text: 'Something else',
-                    btnClass: 'btn-blue',
-                    keys: ['enter', 'shift'],
+                Cerrar: {
+                    text: 'Cerrar',
+                    btnClass: 'btn-default',
+                    keys: ['esc'],
                     action: function(){
-                        $.alert('Something else?');
+
                     }
                 },
 
-                somethingElse: {
-                    text: 'Something else',
+                Eliminar: {
+                    text: 'Si,deseo eliminar el curso',
                     btnClass: 'btn-blue',
                     keys: ['enter', 'shift'],
                     action: function(){
-                        $.alert('Something else?');
+                        $.get("courses/destroy/ajax/" + id,function(response){
+                            toastr.success("El registro fue eliminado exitosamente: "  + response.Name)
+                            $("#Modal_eliminar").modal('hide');
+                            $("#fila" + id).remove();
+                        });
                     }
                 },
             }

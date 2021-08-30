@@ -70,33 +70,42 @@ aun sigue visualmente sin f5,entonces,para que sin f5 se elimine,debo eliminarlo
 
 
 <!-- configurar el boton usando jquery confirm tomando los datos de las variables-->
-$(".btnEliminarsinModal").on ("click",function(){
+$(".btnEliminarsinModal").on("click",function(){
     let id = $(this).attr("datos-id");
     let Name = $(this).attr("datos-Name");
     let Description = $(this).attr("datos-Description");
 
     $.confirm({
-        title: '¿Realmente quiere eliminar este curso?',
+        title: '¿Está seguro(a) que quiere eliminar este curso?',
         content: "Curso: " + Name + "<br>Description: " + Description,
         buttons: {
-            cerrar: function () {
-                $.alert('Confirmed!');
+        
+            Cerrar: {
+                text: 'Cerrar',
+                btnClass: 'btn-default',
+                keys: ['esc'],
+                action: function(){
+
+                }
             },
-            cancel: function () {
-                $.alert('Canceled!');
-            },
-            somethingElse: {
-                text: 'Something else',
+
+            Eliminar: {
+                text: 'Si,deseo eliminar el curso',
                 btnClass: 'btn-blue',
                 keys: ['enter', 'shift'],
                 action: function(){
-                    $.alert('Something else?');
+                    $.get("courses/destroy/ajax/" + id,function(response){
+                        toastr.success("El registro fue eliminado exitosamente: "  + response.Name)
+                        $("#Modal_eliminar").modal('hide');
+                        $("#fila" + id).remove();
+                    });
                 }
-            }
+            },
         }
     });
 
 });
+
 {% endblock %}
 
 
