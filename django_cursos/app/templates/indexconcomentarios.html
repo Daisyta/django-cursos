@@ -1,0 +1,204 @@
+{% extends "base.html" %} {% block title %} Add a new course {% endblock %}
+{%block encabezado %} El titulo de la pagina con contenido va aqui {% endblock %}
+
+{% block librerias %}
+<!-- este bloque esta dentro del base,y dentro dek document.ready,da lo mismo en que parte del template este-->
+<!--porque fue configurado en el base.html.como queremos darle accion al btnremove -->
+<!--de la linea 64 cuando se le haga click,esto se configura aca-->
+
+<!--el  boton funciona,ahora hay que definir que se quiere eliminar-->
+    $(".btnEliminar").on ("click",function(){
+        
+        
+        <!--linea 26 lo que esta dentro del modal-body,es decir, la id: id="modal-remove_content",con jquery busco esa id-->
+        <!--pero no tengo contenido en ese html para-->
+        let id = $(this).attr("datos-id");
+        let Name = $(this).attr("datos-Name");
+        let Description = $(this).attr("datos-Description");
+
+        <!--toastr.info("id" + id);
+        toastr.info("Name" + Name);
+        toastr.info("Description" + Description);
+        toastr.info("Este es un click del remove");-->
+
+<!--como tengo estos 3 datos de let anteriores,ya puedo manipular la ventana emergente-->
+<!--lo que ira dentro del modal body,el html que vamos a generar,se guarda en una variable-->
+<!-- a esta vent emerg ,le agrego html dentro con jquery-->
+        let html = `<p>Curso: ${Name}</p>`; <!-- template string acento invertido-->
+        html += `<p>Description: ${Description}</p>`;
+        <!-- estos parrafos se mandaran en el modal-remove_content de la linea 30-->
+        $("#modal-remove_content").html(html);
+<!-- ahora hay que mostrar el modal de la linea 30,llamar desde un jquery a un modal,leeer doc de bootstrap-->
+<!-- hay que decir cual modal mostrar,es el de la linea 106,linea 34 con signo # porque son id-->
+
+<!-- al btn linea 132,se le va a buscr y se le dan atributos,en este caso el datos-id-->
+        $("#modal_eliminar_boton").attr("datos-id",id);<!-- este datos-id es una clase del modal_eliminar_boton,aqui en este template no esta,pero en el dom si -->
+
+        $("#Modal_eliminar").modal('show');
+<!-- ahora se muestra el modal,pero,al piinchar el si quiero eliminar,no hace nada,por ende,hay que confgurar el boton de si quiero eliminar-->
+<!--hay que añadir una clase a la linea 121 btnConfirmarEliminar pra diferenciarla del btnEliminar que ya esta-->
+        });
+
+        $(".btnConfirmarEliminar").on ("click",function(){ <!-- tbotones con punto,modales con gato-->
+            let id = $(this).attr("datos-id");<!-- como esto se muestra en el dom,se que id se elimina,quiero que al pinchar el botonconfirmareliminar,muestre la id y el nombre de lo que se elimina-->
+            toastr.info("eliminando: " + id);  <!-- solo esto dmuestra que se puede eliminar,aun no se elimina nada-->
+        <!-- para que el contenido de ese btn se elimine,tengo que ir a la linea 128 yagregar una id a ese boton para diferenciarlo: modal_eliminar_boton-->
+     <!-- 52, por lo que queda pendiente hacer una ruta ajax,que es diferente de la url de eliminar courses/destroy/id
+    se hara una ruta que eliminara el id que le pasemos
+    /courses/destroy/ajax/int id esa ruta hay que crear en urls.py,y lo almacena en un json,el ajax me devolvera la info de ese id,no el template completo,
+    cuando se usa un jsonresoinse,no se usa redirect ni render,ahora,hay que llamar desde el ajax a la url que elimina el id
+    es decir-. courses/destroy/ajax/int id en el index.html con $.get(courses/destroy/ajax/int id)
+    -->
+            $.get("courses/destroy/ajax/" + id,function(response){<!-- aqui se ejeuta la ruta y responde esto-->
+                toastr.success("El registro fue eliminado exitosamente  + response.Name")
+<!-- el response trae los datos del json,es decir: curso.Name,curso.Description,-->
+<!-- 53,ya estoy segura que se elimino el dato,pero ,hay que evitar que el usuario actualice la pagina a cada rato-->
+<!-- para evitar dar lata al usuario,hay que hacer k se elimine la fila sola,y eso se configura aca,linea 53
+hay que ir al template indx.html linea 75 agregar una id a la fila,ya que se elimino el registro,pero
+aun sigue visualmente sin f5,entonces,para que sin f5 se elimine,debo eliminarlo de la fila,usando una id a la fila en la linea 112
+
+
+-->
+
+                $("#Modal_eliminar").modal('hide');
+                $("#fila" + id).remove();<!-- aqui seleccione la fila que quiero eliminar,en el dom se muestra que cada fila tiene su id-->
+            });
+
+            });
+    <!-- tbotones con punto,modales con gato-->
+<!-- una vez configurado esto del frontend,hay que configurar el backend-->
+
+
+<!-- configurar el boton usando jquery confirm tomando los datos de las variables-->
+$(".btnEliminarsinModal").on ("click",function(){
+    let id = $(this).attr("datos-id");
+    let Name = $(this).attr("datos-Name");
+    let Description = $(this).attr("datos-Description");
+
+    $.confirm({
+        title: '¿Realmente quiere eliminar este curso?',
+        content: "Curso: " + Name + "<br>Description: " + Description,
+        buttons: {
+            cerrar: function () {
+                $.alert('Confirmed!');
+            },
+            cancel: function () {
+                $.alert('Canceled!');
+            },
+            somethingElse: {
+                text: 'Something else',
+                btnClass: 'btn-blue',
+                keys: ['enter', 'shift'],
+                action: function(){
+                    $.alert('Something else?');
+                }
+            }
+        }
+    });
+
+});
+{% endblock %}
+
+
+
+{% block contenido %}
+
+
+<div class="row">
+    <div class="col-4 offset-3">
+        <h1>Add a new course</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-2">
+                <label for="Name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="Name" name="Name" />
+            </div>
+            <div class="mb-2">
+                <label for="Description" class="form-label">Description</label>
+                <textarea type="text" class="form-control" id="Description" name="Description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Add</button>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-6 offset-3">
+        <hr />
+        <table class="table table-striped primary table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Date Added</th>
+                    <th>Actions sin Ajax</th>
+                    <th>Actions con Ajax</th>
+                    <th>Actions con Ajax sin modal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for curso in cursos %}
+                <tr id="fila{{curso.id}}">
+                    <td>{{curso.Name}}</td>
+                    <td>{{curso.Description}}</td>
+                    <td>{{curso.Created|date:"d-m-Y H:i:s"}}</td>
+                    <td><a href="/courses/destroy/{{curso.id}}">Remove</a></td>
+                    <td>
+                        <!-- Button trigger modal ,este boton muestra el modal sin ajax,
+                    el modal que se ejecuta es data-bs-target 
+                    y tiene que tener el mismo nombre de la id,o sio,no se ejecuta-->
+                        <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal_eliminar">Launch demo modal</button>-->
+                        <a href="#" class="btnEliminar" datos-id="{{curso.id}}" datos-Name="{{curso.Name}}" datos-Description="{{curso.Description}}">Remove</a>
+                        <!-- con ajax,se usa jquery,hay que capturar este click -->
+                        <!-- a la qtiqueta a se le pueden dar atributos ,uno se llama datos-id y se le da curso.id-->
+                        <!-- y puedo darle otros datos tambien,con esto ya capturamos los datos,pero hay que configurar a que boton el usurio le hizo click y eso se hace con el this-->
+                        <!--al que se le hizo click,hay que guardarlo en la bd,por lo que ese this se guarda en una variable (linea 15,16 y 17)-->
+
+                    </td>
+
+
+                    <td>
+                        <!-- ñe quitaremos el btnEliminar,para usar una libreria que se llama jquery-confirm,hay que copiar el css y el script en el base-->
+                        <a href="#" class="btnEliminarsinModal" datos-id="{{curso.id}}" datos-Name="{{curso.Name}}" datos-Description="{{curso.Description}}">Remove</a>
+                        <!-- con ajax,se usa jquery,hay que capturar este click -->
+                        <!-- a la qtiqueta a se le pueden dar atributos ,uno se llama datos-id y se le da curso.id-->
+                        <!-- y puedo darle otros datos tambien,con esto ya capturamos los datos,pero hay que configurar a que boton el usurio le hizo click y eso se hace con el this-->
+                        <!--al que se le hizo click,hay que guardarlo en la bd,por lo que ese this se guarda en una variable (linea 15,16 y 17)-->
+
+                    </td>
+
+
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="Modal_eliminar" tabindex="-1" aria-labelledby="Modal_eliminarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="Modal_eliminar_titulo">¿Realmente quieres eliminar este curso? </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"><!-- aqui iria nombre,descripcion a eliminar,este DOM hay que manipularlo, aqui tengo jquery,tener control de este click -->
+                <div id="modal-remove_content">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button id = "modal_eliminar_boton" type="button" class="btn btn-danger btnConfirmarEliminar">Si,eliminar el curso</button>
+            </div><!-- al boton 132,hay que agregarle un atributo con jquery,se hace lo mismo que cuando se configuro el btn rliminar-->
+        </div>
+    </div>
+</div>
+<!-- hay una alternativa mas corta,en vez de usar modal,se usa jquery-->
+{% endblock %}

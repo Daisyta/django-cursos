@@ -1,0 +1,176 @@
+{% extends "base.html" %} {% block title %} Add a new course {% endblock %}
+{%block encabezado %} El titulo de la pagina con contenido va aqui {% endblock %}
+
+{% block librerias %}
+
+
+    $(".btnEliminar").on ("click",function(){
+        
+        let id = $(this).attr("datos-id");
+        let Name = $(this).attr("datos-Name");
+        let Description = $(this).attr("datos-Description");
+
+        let html = `<p>Curso: ${Name}</p>`; 
+        html += `<p>Description: ${Description}</p>`;
+
+        $("#modal-remove_content").html(html);
+
+        $("#modal_eliminar_boton").attr("datos-id",id);
+
+        $("#Modal_eliminar").modal('show');
+
+        });
+
+    $(".btnConfirmarEliminar").on ("click",function(){
+        let id = $(this).attr("datos-id");
+        toastr.info("eliminando: " + id);
+
+        $.get("courses/destroy/ajax/" + id,function(response){
+            toastr.success("El registro fue eliminado exitosamente: "  + response.Name)
+            $("#Modal_eliminar").modal('hide');
+            $("#fila" + id).remove();
+        });
+    });
+    $(".btnEliminarsinModal").on("click",function(){
+        let id = $(this).attr("datos-id");
+        let Name = $(this).attr("datos-Name");
+        let Description = $(this).attr("datos-Description");
+
+        $.confirm({
+            title: '¿Está seguro(a) que quiere eliminar este curso?',
+            content: "Curso: " + Name + "<br>Description: " + Description,
+            buttons: {
+            
+                somethingElse: {
+                    text: 'Something else',
+                    btnClass: 'btn-blue',
+                    keys: ['enter', 'shift'],
+                    action: function(){
+                        $.alert('Something else?');
+                    }
+                },
+
+                somethingElse: {
+                    text: 'Something else',
+                    btnClass: 'btn-blue',
+                    keys: ['enter', 'shift'],
+                    action: function(){
+                        $.alert('Something else?');
+                    }
+                },
+            }
+        });
+
+    });
+
+
+{% endblock %}
+
+
+
+{% block contenido %}
+
+
+<div class="row">
+    <div class="col-4 offset-3">
+        <h1>Add a new course</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-2">
+                <label for="Name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="Name" name="Name" />
+            </div>
+            <div class="mb-2">
+                <label for="Description" class="form-label">Description</label>
+                <textarea type="text" class="form-control" id="Description" name="Description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Add</button>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-6 offset-3">
+        <hr />
+        <table class="table table-striped primary table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Date Added</th>
+                    <th>Actions sin Ajax</th>
+                    <th>Actions con Ajax</th>
+                    <th>Actions con Ajax sin modal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for curso in cursos %}
+                <tr id="fila{{curso.id}}">
+                    <td>{{curso.Name}}</td>
+                    <td>{{curso.Description}}</td>
+                    <td>{{curso.Created|date:"d-m-Y H:i:s"}}</td>
+                    <td><a href="/courses/destroy/{{curso.id}}">Remove</a></td>
+                    <td>
+                        <!-- Button trigger modal ,este boton muestra el modal sin ajax,
+                    el modal que se ejecuta es data-bs-target 
+                    y tiene que tener el mismo nombre de la id,o sio,no se ejecuta-->
+                        <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal_eliminar">Launch demo modal</button>-->
+                        <a href="#" class="btnEliminar" datos-id="{{curso.id}}" datos-Name="{{curso.Name}}" datos-Description="{{curso.Description}}">Remove</a>
+                        <!-- con ajax,se usa jquery,hay que capturar este click -->
+                        <!-- a la qtiqueta a se le pueden dar atributos ,uno se llama datos-id y se le da curso.id-->
+                        <!-- y puedo darle otros datos tambien,con esto ya capturamos los datos,pero hay que configurar a que boton el usurio le hizo click y eso se hace con el this-->
+                        <!--al que se le hizo click,hay que guardarlo en la bd,por lo que ese this se guarda en una variable (linea 15,16 y 17)-->
+
+                    </td>
+
+
+
+
+                    <td>
+                        <!-- Button trigger modal ,este boton muestra el modal sin ajax,
+                    el modal que se ejecuta es data-bs-target 
+                    y tiene que tener el mismo nombre de la id,o sio,no se ejecuta-->
+                        <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal_eliminar">Launch demo modal</button>-->
+                        <a href="#" class="btnEliminarsinModal" datos-id="{{curso.id}}" datos-Name="{{curso.Name}}" datos-Description="{{curso.Description}}">Remove</a>
+                        <!-- con ajax,se usa jquery,hay que capturar este click -->
+                        <!-- a la qtiqueta a se le pueden dar atributos ,uno se llama datos-id y se le da curso.id-->
+                        <!-- y puedo darle otros datos tambien,con esto ya capturamos los datos,pero hay que configurar a que boton el usurio le hizo click y eso se hace con el this-->
+                        <!--al que se le hizo click,hay que guardarlo en la bd,por lo que ese this se guarda en una variable (linea 15,16 y 17)-->
+
+                    </td>
+
+
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="Modal_eliminar" tabindex="-1" aria-labelledby="Modal_eliminarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="Modal_eliminar_titulo">¿Realmente quieres eliminar este curso? </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"><!-- aqui iria nombre,descripcion a eliminar,este DOM hay que manipularlo, aqui tengo jquery,tener control de este click -->
+                <div id="modal-remove_content">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+                <button id = "modal_eliminar_boton"  type="button" class="btn btn-danger btnConfirmarEliminar">Si,eliminar el curso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

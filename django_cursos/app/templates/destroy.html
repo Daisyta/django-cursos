@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %} ¿Realmente quieres eliminar este curso? {% endblock %}
+{% block encabezado %} Se borra informacion aqui {% endblock %}
+
+{% block contenido %}
+<div class="row">
+    <div class="col-4 offset-4 text-center">
+        <h3>¿Realmente quieres eliminar este curso? </h3>
+        <p>Course: {{curso.Name}}</p>
+        <p>Description: {{curso.Description}}</p>
+
+
+        <form method="post">
+            {% csrf_token %}
+            <a class="btn btn-secondary ms-4" href="/">No</a>
+            <button type="submit" class="btn btn-danger ms-4">Yes,i want to delete this</button>
+        </form>
+        
+    </div>
+</div>
+{% endblock %}
